@@ -1,5 +1,7 @@
 ## env
 .env
+client/.env
+server/.env
 
 ## db ##
 data
