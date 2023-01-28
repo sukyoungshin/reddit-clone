@@ -1,32 +1,35 @@
 import express from 'express';
 import morgan from 'morgan';
 import { AppDataSource } from "./data-source"
+
 import authRoutes from './routes/auth';
+import subRoutes from './routes/subs';
+import cookieParser from 'cookie-parser';
 
 import cors from "cors";
 import dotenv from 'dotenv';
 
 const app = express();
-const origin = 'http://localhost:3000';
+const origin = process.env.ORIGIN;
 
 app.use(cors({
   origin,
   credentials: true
-}))
+}));
 app.use(express.json());
 app.use(morgan('dev'));
-
+app.use(cookieParser());
 dotenv.config();
 
 app.get("/", (_, res) => res.send('running'));
-app.use("/api/auth", authRoutes)
+app.use("/api/auth", authRoutes);
+app.use("/api/subs", subRoutes);
 
 const port = 4000;
 app.listen(port, async () => {
-  console.log(`Server running at https://localhost:${port}`);
+  console.log(`Server running at ${process.env.APP_URL}`);
 
   AppDataSource.initialize().then(async () => {
-    console.log("Inserting a new user into the database...")
-    console.log("Here you can setup and run express / fastify / any other framework.")
+    console.log("Database initialized")
   }).catch(error => console.log(error))
 })
