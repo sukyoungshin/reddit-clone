@@ -3,13 +3,17 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { FormEvent, useState } from "react";
 import InputGroup from "../components/inputGroup";
+import { useAuthState } from "../context/auth";
 
 const Register = () => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<any>({});
+
   const router = useRouter();
+  const { authenticated } = useAuthState();
+  if (authenticated) router.push("/");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -18,11 +22,11 @@ const Register = () => {
         email,
         username,
         password
-      })
-      console.log('res', res)
+      });
       router.push('/login');
+      
     } catch(error: any) {
-      console.log('error', error);
+      console.log('client/src/pages/register', error);
       setErrors(error.response?.data || {});
     }
   }
