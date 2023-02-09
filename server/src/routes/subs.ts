@@ -15,6 +15,19 @@ const getSub = async (req: Request, res: Response) => {
   const name = req.params.name;
   try {
     const sub = await Sub.findOneByOrFail({ name });
+
+    // 포스트를 생성한 후에 해당 sub에 속하는 포스트 정보들을 넣어주기
+    const posts = await Post.find({
+      where: {subName: sub.name},
+      order: {createdAt : "DESC"},
+      relations: ['comments', 'votes']
+    })
+    sub.posts = posts;
+
+    if (res.locals.user) {
+      sub.posts.forEach((p) => p.setUserVote(res.locals.user));
+    }
+
     return res.json(sub);
 
   } catch (error) {
@@ -67,7 +80,7 @@ const createSub = async (req: Request, res: Response, next) => {
 
 const topSubs = async (_: Request, res: Response) => {
   try {
-    const imageUrlExp = `COALESCE(s."imageUrn",'https://www.gravatar.com/avatar?d=mp&f=y')`;
+    const imageUrlExp = `COALESCE('${process.env.APP_URL}/images/' || s."imageUrn",'https://www.gravatar.com/avatar?d=mp&f=y')`;
     const subs = await AppDataSource
       .createQueryBuilder()
       .select(`s.title, s.name, ${imageUrlExp} as "imageUrl", count(p.id) as "postCount"`)
